@@ -1,6 +1,7 @@
 library(raustats)
 library(tidyverse)
 library(ggplot2)
+library(stringr)
 
 ### Let's assume Housing Finance is where I want to enquire. What are the interesting parts to it:
 
@@ -15,6 +16,72 @@ housing_finance <- abs_stats(dataset = 'HF',filter = list(DT = 5, ITEM = "140_1"
 abs_search("Total new housing", dataset="HF", code_only=TRUE)
 
 abs_search("Average Loan", dataset="HF", code_only=TRUE)
+
+
+### The ABS Stats API is incredible, but won't work for this purpose as Housing Finance was replaced with different metrics
+### maybe one day they will be incorporated. But for now I will need to use the catalogs
+
+owner_occupiers <- abs_cat_stats("5601.0", tables = c("24"), releases = "Feb 2020")
+
+investors <- abs_cat_stats("5601.0", tables = c("25"), releases = "Feb 2020")
+
+owner_occupiers_2 <- owner_occupiers %>%
+  separate(data_item_description,
+           into = c("households",
+                    "housing_finance",
+                    "owwner_occupier",
+                    "first_home_buyers",
+                    "region",
+                    "new_loan_commitment",
+                    "metric"),
+           sep = " ;  ") %>%
+  mutate(metric = str_remove(metric," ;"))
+
+owner_occupiers_2 %>%
+  count(series_type)
+
+owner_occupiers_2 %>%
+  count(metric) 
+
+value <- owner_occupiers_2 %>%
+  filter(metric == "Value") %>%
+  filter(region == "Total Australia")
+
+ggplot(value,aes(date,value, colour = series_type,group = series_type)) + 
+  geom_line()
+
+number <- owner_occupiers_2 %>%
+  filter(metric == "Number") %>%
+  filter(region == "Total Australia")
+
+ggplot(number,aes(date,value, colour = series_type,group = series_type)) + 
+  geom_line()
+
+nsw_value <- owner_occupiers_2 %>%
+  filter(metric == "Value") %>%
+  filter(region == "New South Wales")
+
+ggplot(nsw_value,aes(date,value, colour = series_type,group = series_type)) + 
+  geom_line
+
+qld_value <- owner_occupiers_2 %>%
+  filter(metric == "Value") %>%
+  filter(region == "Queensland")
+
+ggplot(qld_value,aes(date,value, colour = series_type,group = series_type)) + 
+  geom_line()
+
+all <- owner_occupiers_2 %>%
+  filter(metric == "Value") %>%
+  filter(series_type == "Seasonally Adjusted")
+
+ggplot(all,aes(date,value, colour = region,group = region)) + 
+  geom_line()
+
+owner_occupier_total_housing <- abs_cat_stats("5601.0", tables = c("4"), releases = "Feb 2020")
+
+
+?abs_cat_stats
 
 Total new housing commitments
 

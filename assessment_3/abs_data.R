@@ -37,6 +37,16 @@ owner_occupiers_2 <- owner_occupiers %>%
            sep = " ;  ") %>%
   mutate(metric = str_remove(metric," ;"))
 
+names(owner_occupiers_2)
+
+selection <- owner_occupiers_2 %>%
+  select(date,region,series_type,metric,value) 
+
+new_loan_commitments <- selection %>%
+  pivot_wider(names_from = metric, values_from = value)
+
+write_csv(new_loan_commitments,"new_loan_commitments.csv")
+
 owner_occupiers_2 %>%
   count(series_type)
 

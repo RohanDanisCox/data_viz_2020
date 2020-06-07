@@ -5,7 +5,7 @@ library(stringr)
 library(lubridate)
 library(zoo)
 
-# Download Catalogue Table from ABS
+# Download Lending Indicators Table from ABS
 
 fhb_raw <- abs_cat_stats("5601.0", tables = c("24"), releases = "Feb 2020")
 
